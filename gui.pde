@@ -67,14 +67,163 @@ void initGUI()
 }
 
 
-void dropEvent(DropEvent theDropEvent) {
-  println("toString()\t"+theDropEvent.toString());
 
-  if (theDropEvent.isFile() && theDropEvent.isImage())
-  {
-    fileSelected(theDropEvent.file());
+void LOAD_FILE(float theValue) {  
+  println(":::LOAD JPG, GIF or PNG FILE:::");
+
+  selectInput("Select a file to process:", "fileSelected");  // Opens file chooser
+} //End Load File
+
+void SAVE_PATH(float theValue) {  
+  FileModeTSP = true;
+  SAVE_SVG(0);
+}
+
+void SAVE_STIPPLES(float theValue) {  
+  FileModeTSP = false;
+  SAVE_SVG(0);
+}
+
+void SAVE_SVG(float theValue) {  
+
+  if (pausemode != true) {
+    Pause(0.0);
+    ErrorDisplay = "Error: PAUSE before saving.";
+    ErrorTime = millis();
+    ErrorDisp = true;
+  } else {
+
+    selectOutput("Output .svg file name:", "SavefileSelected");
   }
-  // returns the DropTargetDropEvent, for further information see
-  // http://java.sun.com/j2se/1.4.2/docs/api/java/awt/dnd/DropTargetDropEvent.html
-  println("dropTargetDropEvent()\t"+theDropEvent.dropTargetDropEvent());
+}
+
+
+
+
+void QUIT(float theValue) { 
+  exit();
+}
+
+
+void ORDER_ON_OFF(float theValue) {  
+  if (showPath) {
+    showPath  = false;
+    OrderOnOff.setCaptionLabel("Plotting path >> Hide");
+  } else {
+    showPath  = true;
+    OrderOnOff.setCaptionLabel("Plotting path >> Shown while paused");
+  }
+} 
+
+void CELLS_ON_OFF(float theValue) {  
+  if (showCells) {
+    showCells  = false;
+    CellOnOff.setCaptionLabel("Cells >> Hide");
+  } else {
+    showCells  = true;
+    CellOnOff.setCaptionLabel("Cells >> Show");
+  }
+}  
+
+
+
+void IMG_ON_OFF(float theValue) {  
+  if (showBG) {
+    showBG  = false;
+    ImgOnOff.setCaptionLabel("Image BG >> Hide");
+  } else {
+    showBG  = true;
+    ImgOnOff.setCaptionLabel("Image BG >> Show");
+  }
+} 
+
+
+void INVERT_IMG(float theValue) {  
+  if (invertImg) {
+    invertImg  = false;
+    InvertOnOff.setCaptionLabel("Black stipples, White Background");
+    cp5.getController("White_Cutoff").setCaptionLabel("White Cutoff");
+  } else {
+    invertImg  = true;
+    InvertOnOff.setCaptionLabel("White stipples, Black Background");
+    cp5.getController("White_Cutoff").setCaptionLabel("Black Cutoff");
+  }
+
+  ReInitiallizeArray = true;
+  pausemode =  false;
+} 
+
+
+
+
+void Pause(float theValue) { 
+  // Main particle array setup (to be repeated if necessary):
+
+  if  (pausemode)
+  {
+    pausemode = false;
+    println("Resuming.");
+    PauseButton.setCaptionLabel("Pause (to calculate TSP path)");
+  } else
+  {
+    pausemode = true;
+    println("Paused. Press PAUSE again to resume.");
+    PauseButton.setCaptionLabel("Paused (calculating TSP path)");
+  }
+  RouteStep = 0;
+} 
+
+
+void Stipples(int inValue) { 
+
+  if (maxParticles != (int) inValue) {
+    println("Update:  Stipple Count -> " + inValue); 
+    ReInitiallizeArray = true;
+    pausemode =  false;
+  }
+}
+
+
+
+
+
+void Min_Dot_Size(float inValue) {
+  if (MinDotSize != inValue) {
+    println("Update: Min_Dot_Size -> "+inValue);  
+    MinDotSize = inValue; 
+    MaxDotSize = MinDotSize* (1 + DotSizeFactor);
+  }
+} 
+
+
+void Dot_Size_Range(float inValue) {  
+  if (DotSizeFactor != inValue) {
+    println("Update: Dot Size Range -> "+inValue); 
+    DotSizeFactor = inValue;
+    MaxDotSize = MinDotSize* (1 + DotSizeFactor);
+  }
+} 
+
+
+void White_Cutoff(float inValue) {
+  if (cutoff != inValue) {
+    println("Update: White_Cutoff -> "+inValue); 
+    cutoff = inValue; 
+    RouteStep = 0; // Reset TSP path
+  }
+} 
+
+
+void  DoBackgrounds() {
+  if (showBG)
+    image(img, 0, 0);    // Show original (cropped and scaled, but not blurred!) image in background
+  else { 
+
+    if (invertImg)
+      fill(0);
+    else
+      fill(255);
+
+    rect(0, 0, mainwidth, mainheight);
+  }
 }
